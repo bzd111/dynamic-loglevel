@@ -1,0 +1,41 @@
+# coding: utf-8
+"exec" "python" "./bin/zidy" "$@"
+
+__doc__ = """
+Usage:
+  zidy --log-level=<Log-Level>
+  zidy -h | --help
+
+Options:
+  -h, --help                   Show help.
+  -l, --log-level Log-Level    Set log level, can be one of info, debug,
+                               critical, warning, error, INFO, DEBUG, CRITICAL,
+                               WARNING, ERROR.
+"""
+
+
+if __name__ == '__main__':
+    import sys
+    from os.path import dirname, abspath
+
+    # Set module path
+    root_dir = dirname(dirname(abspath(__file__)))
+    sys.path.insert(0, root_dir)
+
+    # Handle CLI
+    import docopt
+    import requests
+    import settings
+    from settings import LOGGING
+
+    cli_args = docopt.docopt(__doc__, options_first=True)
+    if cli_args['--log-level'] not in \
+            ('info', 'debug', 'critical', 'warn', 'warning', 'error',
+             'INFO', 'DEBUG', 'CRITICAL', 'WARN', 'WARNING', 'ERROR'):
+        raise docopt.DocoptExit()
+    LOG_LEVEL = cli_args['--log-level'].upper()
+    LOG_LEVEL_URL = 'http://127.0.0.1:{}/loglevel'.format(settings.FRAMEWORK_PORT)
+    res = requests.post(LOG_LEVEL_URL,
+                        json={'LOG_LEVEL': LOG_LEVEL},
+                        verify=False)
+    print res.content
